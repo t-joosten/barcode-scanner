@@ -1,0 +1,10 @@
+<zxing-scanner #scanner [formats]="allowedFormats" [enable]="isScannerEnabled"></zxing-scanner>
+
+<h1>Select camera</h1>
+<ul *ngIf="devices">
+  <li *ngFor="let device of devices" (click)="selectDevice(device)">{{ device.label }}</li>
+</ul>
+
+<p #input></p>
+
+<button (click)="isScannerEnabled = !isScannerEnabled">Enable/disable camera</button>
