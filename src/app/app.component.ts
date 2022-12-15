@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { BarcodeFormat } from '@zxing/library'
 import { ZXingScannerComponent } from "@zxing/ngx-scanner";
-import { Subject, takeUntil } from "rxjs";
+import { Subject } from "rxjs";
 
 @Component({
   selector: 'app-root',
@@ -12,17 +12,21 @@ export class AppComponent {
   @ViewChild('scanner', { static: false }) scanner!: ZXingScannerComponent;
   @ViewChild('input', {static: false}) input!: HTMLParagraphElement;
 
-  public allowedFormats = [ BarcodeFormat.EAN_13, BarcodeFormat.CODE_128, BarcodeFormat.DATA_MATRIX ];
+  public allowedFormats = [
+    BarcodeFormat.CODE_128,
+    BarcodeFormat.DATA_MATRIX,
+    BarcodeFormat.EAN_13,
+    BarcodeFormat.QR_CODE
+  ];
   public availableDevices: MediaDeviceInfo[] = [];
   public hasDevices: boolean = false;
   public isScannerEnabled = true;
   public barcodeResults: Array<string> = [];
+  public qrResultString: string = '';
+  public tryHarder: boolean = false;
+  public hasPermission: boolean = false;
 
   private destroy$ = new Subject();
-
-  public ngAfterViewInit(): void {
-    this.scanner.scanComplete.subscribe(res => this.input.innerHTML = this.input.innerHTML + res?.toString() + '\r\n');
-  }
 
   public ngOnDestroy(): void {
     this.destroy$.next(null);
@@ -43,8 +47,15 @@ export class AppComponent {
     }
   }
 
-  public toggleTryHarder(event: any): void {
-    console.log(event.target.checked);
-    this.scanner.tryHarder = event.target.checked;
+  public toggleTryHarder(): void {
+    this.tryHarder = !this.tryHarder;
+  }
+
+  public clearResult(): void {
+    this.qrResultString = '';
+  }
+
+  public onHasPermission(has: boolean) {
+    this.hasPermission = has;
   }
 }
