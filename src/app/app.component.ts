@@ -48,7 +48,7 @@ export class AppComponent implements OnInit, OnDestroy {
   public onCodeResult(resultString: string) {
     this.qrResultString = resultString;
 
-    if (this.barcodeResults.findIndex(barcodeResult => barcodeResult === resultString) > -1) {
+    if (this.barcodeResults.findIndex(barcodeResult => barcodeResult === resultString) === -1) {
       this.barcodeResults.push(resultString)
     }
   }
@@ -85,8 +85,5 @@ export class AppComponent implements OnInit, OnDestroy {
     this.deviceSelected = selectedStr;
     this.deviceCurrent = device || undefined;
 
-    if (this.deviceCurrent) {
-      this.scanner.hints.set(DecodeHintType.ASSUME_GS1, true);
-    }
   }
 }
