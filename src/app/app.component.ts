@@ -13,14 +13,14 @@ export class AppComponent {
   @ViewChild('input', {static: false}) input!: HTMLParagraphElement;
 
   public allowedFormats = [ BarcodeFormat.EAN_13, BarcodeFormat.CODE_128, BarcodeFormat.DATA_MATRIX ];
-  public devices: MediaDeviceInfo[] = [];
+  public availableDevices: MediaDeviceInfo[] = [];
+  public hasDevices: boolean = false;
   public isScannerEnabled = true;
+  public barcodeResults: Array<string> = [];
 
   private destroy$ = new Subject();
 
   public ngAfterViewInit(): void {
-    this.watchAvailableCameras();
-
     this.scanner.scanComplete.subscribe(res => this.input.innerHTML = this.input.innerHTML + res?.toString() + '\r\n');
   }
 
@@ -32,10 +32,19 @@ export class AppComponent {
     this.scanner.device = device;
   }
 
-  private watchAvailableCameras(): void {
-    this.scanner
-      .camerasFound
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(devices =>  this.devices = devices);
+  public onCamerasFound(devices: MediaDeviceInfo[]): void {
+    this.availableDevices = devices;
+    this.hasDevices = Boolean(devices && devices.length);
+  }
+
+  public onCodeResult(resultString: string) {
+    if (this.barcodeResults.findIndex(barcodeResult => barcodeResult === resultString) > -1) {
+      this.barcodeResults.push(resultString)
+    }
+  }
+
+  public toggleTryHarder(event: any): void {
+    console.log(event.target.checked);
+    this.scanner.tryHarder = event.target.checked;
   }
 }
