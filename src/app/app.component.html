@@ -3,7 +3,7 @@
   [device]="deviceCurrent"
   (camerasFound)="onCamerasFound($event)"
   (scanSuccess)="onCodeResult($event)"
-  [formats]="allowedFormats"
+  [formats]="possibleFormats"
   [enable]="isScannerEnabled"
   [tryHarder]="tryHarder"
   (permissionResponse)="onHasPermission($event)"

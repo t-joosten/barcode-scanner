@@ -1,5 +1,5 @@
-import { Component, ViewChild } from '@angular/core';
-import { BarcodeFormat } from '@zxing/library'
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { BarcodeFormat, DecodeHintType } from '@zxing/library'
 import { ZXingScannerComponent } from "@zxing/ngx-scanner";
 import { Subject } from "rxjs";
 
@@ -8,15 +8,13 @@ import { Subject } from "rxjs";
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
   @ViewChild('scanner', { static: false }) scanner!: ZXingScannerComponent;
   @ViewChild('input', {static: false}) input!: HTMLParagraphElement;
 
-  public allowedFormats = [
+  public possibleFormats = [
     BarcodeFormat.CODE_128,
-    BarcodeFormat.DATA_MATRIX,
     BarcodeFormat.EAN_13,
-    BarcodeFormat.QR_CODE
   ];
   public deviceCurrent!: MediaDeviceInfo | undefined;
   public deviceSelected!: string;
@@ -29,10 +27,17 @@ export class AppComponent {
   public hasPermission: boolean = false;
   public torchEnabled: boolean = false;
 
+  private hints: Map<DecodeHintType, any> = new Map<DecodeHintType, any>()
+
   private destroy$ = new Subject();
 
   public ngOnDestroy(): void {
     this.destroy$.next(null);
+  }
+
+  public ngOnInit(): void {
+    this.hints.set(DecodeHintType.ASSUME_GS1, true)
+    this.hints.set(DecodeHintType.POSSIBLE_FORMATS, this.possibleFormats)
   }
 
   public onCamerasFound(devices: MediaDeviceInfo[]): void {
@@ -79,5 +84,9 @@ export class AppComponent {
     if (this.deviceSelected === selectedStr) { return; }
     this.deviceSelected = selectedStr;
     this.deviceCurrent = device || undefined;
+
+    if (this.deviceCurrent) {
+      this.scanner.hints.set(DecodeHintType.ASSUME_GS1, true);
+    }
   }
 }
