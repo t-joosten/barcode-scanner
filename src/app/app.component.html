@@ -1,9 +1,20 @@
-<zxing-scanner #scanner (camerasFound)="onCamerasFound($event)" (scanSuccess)="onCodeResult($event)" [formats]="allowedFormats" [enable]="isScannerEnabled" [tryHarder]="tryHarder" (permissionResponse)="onHasPermission($event)"></zxing-scanner>
+<zxing-scanner
+  #scanner
+  [device]="deviceCurrent"
+  (camerasFound)="onCamerasFound($event)"
+  (scanSuccess)="onCodeResult($event)"
+  [formats]="allowedFormats"
+  [enable]="isScannerEnabled"
+  [tryHarder]="tryHarder"
+  (permissionResponse)="onHasPermission($event)"
+  (deviceChange)="onDeviceChange($event)">
+</zxing-scanner>
 
 <h1>Select camera</h1>
-<ul *ngIf="availableDevices">
-  <li *ngFor="let device of availableDevices" (click)="selectDevice(device)">{{ device.label }}</li>
-</ul>
+<select #devices *ngIf="availableDevices" [value]="deviceSelected" (change)="onDeviceSelectChange(devices.value)">
+  <option [value]="">No device selected</option>
+  <option [value]="device.deviceId" *ngFor="let device of availableDevices" >{{ device.label }}</option>
+</select>
 
 <p>v1</p>
 
@@ -13,6 +24,9 @@
 
 <label for="toggle-try-harder">Try harder</label>
 <input type="checkbox" id="toggle-try-harder" (change)="toggleTryHarder()" />
+
+<label for="toggle-torch">Torch</label>
+<input type="checkbox" id="toggle-torch" (change)="toggleTorch()" />
 
 <ng-container *ngFor="let result of barcodeResults">
   <p>{{ result }}</p>

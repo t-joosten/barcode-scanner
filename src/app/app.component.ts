@@ -18,6 +18,8 @@ export class AppComponent {
     BarcodeFormat.EAN_13,
     BarcodeFormat.QR_CODE
   ];
+  public deviceCurrent!: MediaDeviceInfo | undefined;
+  public deviceSelected!: string;
   public availableDevices: MediaDeviceInfo[] = [];
   public hasDevices: boolean = false;
   public isScannerEnabled = true;
@@ -25,15 +27,12 @@ export class AppComponent {
   public qrResultString: string = '';
   public tryHarder: boolean = false;
   public hasPermission: boolean = false;
+  public torchEnabled: boolean = false;
 
   private destroy$ = new Subject();
 
   public ngOnDestroy(): void {
     this.destroy$.next(null);
-  }
-
-  public selectDevice(device: MediaDeviceInfo): void {
-    this.scanner.device = device;
   }
 
   public onCamerasFound(devices: MediaDeviceInfo[]): void {
@@ -42,6 +41,8 @@ export class AppComponent {
   }
 
   public onCodeResult(resultString: string) {
+    this.qrResultString = resultString;
+
     if (this.barcodeResults.findIndex(barcodeResult => barcodeResult === resultString) > -1) {
       this.barcodeResults.push(resultString)
     }
@@ -57,5 +58,26 @@ export class AppComponent {
 
   public onHasPermission(has: boolean) {
     this.hasPermission = has;
+  }
+
+  public toggleTorch(): void {
+    this.torchEnabled = !this.torchEnabled;
+  }
+
+  public onDeviceSelectChange(selected: string) {
+    console.log(selected);
+
+    const selectedStr = selected|| '';
+    if (this.deviceSelected === selectedStr) { return; }
+    this.deviceSelected = selectedStr;
+    const device = this.availableDevices.find(x => x.deviceId === selected);
+    this.deviceCurrent = device || undefined;
+  }
+
+  public onDeviceChange(device: MediaDeviceInfo) {
+    const selectedStr = device?.deviceId || '';
+    if (this.deviceSelected === selectedStr) { return; }
+    this.deviceSelected = selectedStr;
+    this.deviceCurrent = device || undefined;
   }
 }
