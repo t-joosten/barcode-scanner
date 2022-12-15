@@ -75,15 +75,6 @@ export class AppComponent implements OnInit, OnDestroy {
     const selectedStr = selected|| '';
     if (this.deviceSelected === selectedStr) { return; }
     this.deviceSelected = selectedStr;
-    const device = this.availableDevices.find(x => x.deviceId === selected);
-    this.deviceCurrent = device || undefined;
-  }
-
-  public onDeviceChange(device: MediaDeviceInfo) {
-    const selectedStr = device?.deviceId || '';
-    if (this.deviceSelected === selectedStr) { return; }
-    this.deviceSelected = selectedStr;
-    this.deviceCurrent = device || undefined;
-
+    this.deviceCurrent = this.availableDevices.find(availableDevice => availableDevice.deviceId === selected);
   }
 }
