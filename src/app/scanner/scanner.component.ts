@@ -2,6 +2,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MultiFormatReader } from "@zxing/library";
 import { from, map } from "rxjs";
 import { BarcodeFormat } from "../../types/barcode-format.enum";
+// @ts-ignore
+import * as bark from 'bark-js'
 
 @Component({
   selector: 'app-scanner',
@@ -97,8 +99,9 @@ export class ScannerComponent implements OnInit {
         return;
       }
 
+      //{ formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'data_matrix', 'codabar', 'itf', ] }
     // @ts-ignore
-    const barcodeDetector = new BarcodeDetector({ formats: ['code_128', 'ean_13', 'ean_8', 'upc_a'] });
+    const barcodeDetector = new BarcodeDetector();
     console.log('decoding');
 
     barcodeDetector
@@ -121,7 +124,11 @@ export class ScannerComponent implements OnInit {
         let pre = document.createElement('pre');
         // pre.innerHTML = JSON.stringify(barcodes, null, 2);
 
-        barcodes.forEach(barcode => barcode.rawValue)
+        barcodes.forEach(barcode => {
+          this.scannedBarcodes.push(barcode.rawValue);
+
+          console.log(bark( barcode.rawValue ));
+        });
         var footer = document.getElementsByTagName('footer')[0];
         footer.after(pre);
       })

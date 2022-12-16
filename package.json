@@ -21,6 +21,7 @@
     "@undecaf/barcode-detector-polyfill": "^0.9.14",
     "@zxing/library": "^0.19.1",
     "@zxing/ngx-scanner": "^3.8.0",
+    "bark-js": "^1.2.1",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.12.0"
