@@ -1,7 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MultiFormatReader } from "@zxing/library";
 import { from, map } from "rxjs";
-import { BarcodeFormat } from "../../types/barcode-format.enum";
 // @ts-ignore
 import * as bark from 'bark-js'
 
@@ -20,8 +18,6 @@ export class ScannerComponent implements OnInit {
     public currentCamera: MediaDeviceInfo;
     public scannedBarcodes: string[] = [];
 
-    private reader = new MultiFormatReader();
-    private formats = [ BarcodeFormat.CODE128, BarcodeFormat.EAN13, BarcodeFormat.EAN8 ];
     private imageCapture: ImageCapture;
     private constraints: any;
 
@@ -81,7 +77,7 @@ export class ScannerComponent implements OnInit {
 
   private detect(image: ImageBitmap | Blob): void {
       if (!('BarcodeDetector' in window)) {
-        var footer = document.getElementsByTagName('footer')[0];
+        const footer = document.getElementsByTagName('footer')[0];
         footer.innerHTML = "Barcode Detection not supported";
         console.error('Barcode Detection not supported');
         return;
@@ -126,15 +122,4 @@ export class ScannerComponent implements OnInit {
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, width, height);
   }
-
-  private securityCheck(): void {
-    var isSecureOrigin = location.protocol === 'https:' ||
-      location.host === 'localhost';
-    if (!isSecureOrigin) {
-      alert('getUserMedia() must be run from a secure origin: HTTPS or localhost.' +
-        '\n\nChanging protocol to HTTPS');
-      location.protocol = 'HTTPS';
-    }
-  }
-
 }
