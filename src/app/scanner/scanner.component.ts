@@ -17,6 +17,7 @@ export class ScannerComponent implements OnInit {
     public stream: MediaStream | null = null;
     private reader = new MultiFormatReader();
     private formats = [ 'code_128', 'ean_13' ];
+    private scale: number = 0;
 
 
   //     'aztec',
@@ -40,8 +41,8 @@ export class ScannerComponent implements OnInit {
         {
           frameRate: { ideal: 60, min: 30 },
           facingMode: { ideal: "environment" },
-          width:  { exact: 626 },
-          height: { exact: 720 },
+          width:  { exact: 1920 },
+          height: { exact: 1080 },
         }
     }
 
@@ -59,7 +60,7 @@ export class ScannerComponent implements OnInit {
             videoSource = device.deviceId;
           }
         });
-        const constraints = { "video": { deviceId: {exact : videoSource}, width: { max: 320 } } };
+        const constraints = { "video": { deviceId: {exact : videoSource}, width: { max: 1920 } } };
         return navigator.mediaDevices.getUserMedia(this.constraints);
       })
       .then(stream => {
@@ -73,44 +74,46 @@ export class ScannerComponent implements OnInit {
   }
 
   public detect(): void {
-    if (!('BarcodeDetector' in window)) {
+    if (!('BarcodeDetector' in window) || this.stream === null) {
       var footer = document.getElementsByTagName('footer')[0];
       footer.innerHTML = "Barcode Detection not supported";
       console.error('Barcode Detection not supported');
       return;
     }
 
-    // var capturer = new ImageCapture(theStream.getVideoTracks()[0]);
-    // capturer.grabFrame()
-    //   .then(bitmap => {
-    //     var canvas = document.getElementById('canvas');
-    //     canvas.width = canvas.height *
-    //       document.getElementById('video').videoWidth /
-    //       document.getElementById('video').videoHeight;
-    //     scale = canvas.width / bitmap.width;
-    //     var ctx = canvas.getContext("2d");
-    //     ctx.drawImage(bitmap,
-    //       0, 0, bitmap.width, bitmap.height,
-    //       0, 0, canvas.width, canvas.height);
-    //
-    //     var barcodeDetector = new BarcodeDetector();
-    //     return barcodeDetector.detect(bitmap);
-    //   })
-    //   .then(barcodes => {
-    //     var canvas = document.getElementById('canvas');
-    //     var ctx = canvas.getContext("2d");
-    //     ctx.lineWidth = 2;
-    //     ctx.strokeStyle = "red";
-    //
-    //     for (var i = 0; i < barcodes.length; i++) {
-    //       const barcode = barcodes[i].boundingBox;
-    //       ctx.rect(Math.floor(barcode.x * scale),
-    //         Math.floor(barcode.y * scale),
-    //         Math.floor(barcode.width * scale),
-    //         Math.floor(barcode.height * scale));
-    //       ctx.stroke();
-    //     }
-    //   }
+    var capturer = new ImageCapture(this.stream.getVideoTracks()[0]);
+    capturer.grabFrame()
+      .then(bitmap => {
+        const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+        const scannerVideo = document.getElementById('scanner-video') as HTMLVideoElement;
+        canvas.width = canvas.height *
+          scannerVideo.videoWidth /
+          scannerVideo.videoHeight;
+        this.scale = canvas.width / bitmap.width;
+        const ctx = canvas.getContext("2d");
+        ctx!.drawImage(bitmap,
+          0, 0, bitmap.width, bitmap.height,
+          0, 0, canvas.width, canvas.height);
+
+        // @ts-ignore
+        var barcodeDetector = new BarcodeDetector();
+        return barcodeDetector.detect(bitmap);
+      })
+      .then(barcodes => {
+        var canvas = document.getElementById('canvas') as HTMLCanvasElement;
+        var ctx = canvas.getContext("2d");
+        ctx!.lineWidth = 2;
+        ctx!.strokeStyle = "red";
+
+        for (var i = 0; i < barcodes.length; i++) {
+          const barcode = barcodes[i].boundingBox;
+          ctx!.rect(Math.floor(barcode.x * this.scale),
+            Math.floor(barcode.y * this.scale),
+            Math.floor(barcode.width * this.scale),
+            Math.floor(barcode.height * this.scale));
+          ctx!.stroke();
+        }
+      });
   }
 
     private initializeCameras(): void {
