@@ -98,7 +98,7 @@ export class ScannerComponent implements OnInit {
       }
 
     // @ts-ignore
-    const barcodeDetector = new BarcodeDetector({ formats: this.formats });
+    const barcodeDetector = new BarcodeDetector({ formats: ['code_128', 'ean_13', 'ean_8', 'upc_a'] });
     console.log('decoding');
 
     barcodeDetector
