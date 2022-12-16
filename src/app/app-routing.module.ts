@@ -4,8 +4,8 @@ import { NgxScannerComponent } from "./ngx-scanner/ngx-scanner.component";
 import { ScannerComponent } from "./scanner/scanner.component";
 
 const routes: Routes = [
-  { path: '', component: NgxScannerComponent },
-  { path: 'scanner', component: ScannerComponent }
+  { path: 'ngx-scanner', component: NgxScannerComponent },
+  { path: '', component: ScannerComponent }
 ];
 
 @NgModule({
