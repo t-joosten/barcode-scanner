@@ -11,29 +11,20 @@ button:last-of-type {
   margin: 0;
 }
 
-canvas {
-  display: block;
-  margin: 0 0 20px 0;
+.container {
+  position: relative;
+}
+
+#scanner-canvas {
+  top: 0;
+  left: 0;
+  position: absolute;
+  z-index: 10;
 }
 
 img {
   display: block;
   margin: 0 0 20px 0;
-}
-
-input#zoom {
-  margin: 0 0 20px 0;
-  width: 100%;
-}
-
-.borderBelow {
-  margin: 0 0 20px 0;
-  padding: 0 0 20px 0;
-}
-
-video {
-  margin: 0 12px 20px 0;
-  vertical-align: top;
 }
 
 @media (max-width: 500px) {

@@ -1,7 +1,7 @@
 <div>
-  <button (click)="grabFrame()">Grab frame</button>
+<!--  <button (click)="grabFrame()">Grab frame</button>-->
   <div class="select">
-    <label for="videoSource">Video source: </label>
+    <label for="videoSource">Camera: </label>
     <select id="videoSource" #cameras *ngIf="availableCameras" (change)="setCamera(cameras.value)">
       <option [value]="">No camera selected</option>
       <option [value]="camera.deviceId" *ngFor="let camera of availableCameras" >{{ camera.label }}</option>
@@ -10,8 +10,11 @@
 <!--  <input #scannerZoomInput class="hidden" id="zoom" type="range" step="20">-->
 </div>
 
-<video id="scanner-video" autoplay playsinline></video>
-<canvas id="scanner-canvas" class="hidden"></canvas>
+<div class="container">
+  <video id="scanner-video" autoplay playsinline></video>
+  <canvas id="scanner-canvas" class="hidden"></canvas>
+</div>
+
 <footer></footer>
 
 <p *ngFor="let scannedBarcode of scannedBarcodes">

@@ -18,29 +18,20 @@ export class ScannerComponent implements OnInit {
     public mediaStream: MediaStream;
     public availableCameras: MediaDeviceInfo[];
     public currentCamera: MediaDeviceInfo;
-    public scannedBarcodes: string[];
+    public scannedBarcodes: string[] = [];
 
     private reader = new MultiFormatReader();
     private formats = [ BarcodeFormat.CODE128, BarcodeFormat.EAN13, BarcodeFormat.EAN8 ];
     private imageCapture: ImageCapture;
     private constraints: any;
 
-  //     'aztec',
-  // 'code_128',
-  // 'code_39',
-  // 'code_93',
-  // 'codabar',
-  // 'data_matrix',
-  // 'ean_13',
-  // 'ean_8',
-  // 'itf',
-  // 'pdf417',
-  // 'qr_code',
-  // 'upc_a',
-  // 'upc_e',
-
   public ngOnInit(): void {
     this.getCameras();
+
+    console.log(bark("0110888857348424112211041725121010KXCA-443799-611174"));
+
+    // @ts-ignore
+    parseBarcode("0110888857348424112211041725121010KXCA-443799-611174");
   }
 
   public getCameras(): void {
@@ -70,6 +61,7 @@ export class ScannerComponent implements OnInit {
         scannerVideo.srcObject = mediaStream;
         this.mediaStream = mediaStream;
         this.imageCapture = new ImageCapture(mediaStream.getVideoTracks()[0])
+        setInterval(() => this.grabFrame(), 100);
       })
       .catch(error => {
         console.log('getUserMedia error: ', error);
@@ -80,10 +72,12 @@ export class ScannerComponent implements OnInit {
     this.imageCapture.grabFrame().then(imageBitmap => {
       console.log('Grabbed frame:', imageBitmap);
       const scannerCanvas = document.getElementById('scanner-canvas') as HTMLCanvasElement;
-      scannerCanvas.width = imageBitmap.width;
-      scannerCanvas.height = imageBitmap.height;
-      scannerCanvas.getContext('2d').drawImage(imageBitmap, 0, 0);
-      scannerCanvas.classList.remove('hidden');
+      const context = scannerCanvas.getContext('2d');
+      context.clearRect(0, 0, imageBitmap.width, imageBitmap.height);
+      // scannerCanvas.width = imageBitmap.width;
+      // scannerCanvas.height = imageBitmap.height;
+      // scannerCanvas.getContext('2d').drawImage(imageBitmap, 0, 0);
+      // scannerCanvas.classList.remove('hidden');
       this.detect(imageBitmap);
     }).catch(function(error) {
       console.log('grabFrame() error: ', error);
@@ -107,10 +101,13 @@ export class ScannerComponent implements OnInit {
     barcodeDetector
       .detect(image)
       .then((barcodes: DetectedBarcode[]) => {
+        const scannerCanvas = document.getElementById('scanner-canvas') as HTMLCanvasElement;
+        if (barcodes) {
+          scannerCanvas.classList.remove('hidden');
+        }
+
         barcodes.forEach(barcode => {
           const lastCornerPoint = barcode.cornerPoints[barcode.cornerPoints.length - 1]
-
-          const scannerCanvas = document.getElementById('scanner-canvas') as HTMLCanvasElement;
           const ctx = scannerCanvas.getContext('2d');
           ctx.moveTo(lastCornerPoint.x, lastCornerPoint.y)
           barcode.cornerPoints.forEach(point => ctx.lineTo(point.x, point.y))
@@ -128,6 +125,8 @@ export class ScannerComponent implements OnInit {
           this.scannedBarcodes.push(barcode.rawValue);
 
           console.log(bark( barcode.rawValue ));
+          // @ts-ignore
+          console.log(parseBarcode(barcode.rawValue));
         });
         var footer = document.getElementsByTagName('footer')[0];
         footer.after(pre);
