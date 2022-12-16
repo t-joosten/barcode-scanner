@@ -29,9 +29,6 @@ export class ScannerComponent implements OnInit {
     this.getCameras();
 
     console.log(bark("0110888857348424112211041725121010KXCA-443799-611174"));
-
-    // @ts-ignore
-    parseBarcode("0110888857348424112211041725121010KXCA-443799-611174");
   }
 
   public getCameras(): void {
@@ -72,10 +69,9 @@ export class ScannerComponent implements OnInit {
     this.imageCapture.grabFrame().then(imageBitmap => {
       console.log('Grabbed frame:', imageBitmap);
       const scannerCanvas = document.getElementById('scanner-canvas') as HTMLCanvasElement;
-      const context = scannerCanvas.getContext('2d');
-      context.clearRect(0, 0, imageBitmap.width, imageBitmap.height);
-      // scannerCanvas.width = imageBitmap.width;
-      // scannerCanvas.height = imageBitmap.height;
+      scannerCanvas.width = imageBitmap.width;
+      scannerCanvas.height = imageBitmap.height;
+      this.clearCanvas(scannerCanvas, imageBitmap.width, imageBitmap.height);
       // scannerCanvas.getContext('2d').drawImage(imageBitmap, 0, 0);
       // scannerCanvas.classList.remove('hidden');
       this.detect(imageBitmap);
@@ -118,20 +114,20 @@ export class ScannerComponent implements OnInit {
         })
 
         console.log(barcodes);
-        let pre = document.createElement('pre');
-        // pre.innerHTML = JSON.stringify(barcodes, null, 2);
 
         barcodes.forEach(barcode => {
-          this.scannedBarcodes.push(barcode.rawValue);
-
+          if (this.scannedBarcodes.findIndex(scannedBarcode => scannedBarcode === barcode.rawValue)) {
+            this.scannedBarcodes.push(barcode.rawValue);
+          }
           console.log(bark( barcode.rawValue ));
-          // @ts-ignore
-          console.log(parseBarcode(barcode.rawValue));
         });
-        var footer = document.getElementsByTagName('footer')[0];
-        footer.after(pre);
       })
       .catch(console.error);
+  }
+
+  private clearCanvas(canvas: HTMLCanvasElement, width: number, height: number) {
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, width, height);
   }
 
   private securityCheck(): void {
