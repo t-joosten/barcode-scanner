@@ -27,8 +27,6 @@ export class ScannerComponent implements OnInit {
 
   public ngOnInit(): void {
     this.getCameras();
-
-    console.log(bark("0110888857348424112211041725121010KXCA-443799-611174"));
   }
 
   public getCameras(): void {
@@ -89,7 +87,6 @@ export class ScannerComponent implements OnInit {
         return;
       }
 
-      //{ formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'data_matrix', 'codabar', 'itf', ] }
     // @ts-ignore
     const barcodeDetector = new BarcodeDetector();
     console.log('decoding');
@@ -116,7 +113,7 @@ export class ScannerComponent implements OnInit {
         console.log(barcodes);
 
         barcodes.forEach(barcode => {
-          if (this.scannedBarcodes.findIndex(scannedBarcode => scannedBarcode === barcode.rawValue)) {
+          if (this.scannedBarcodes.findIndex(scannedBarcode => scannedBarcode === barcode.rawValue) === -1) {
             this.scannedBarcodes.push(barcode.rawValue);
           }
           console.log(bark( barcode.rawValue ));
