@@ -7,8 +7,13 @@ declare global {
 
   interface DetectedBarcode {
     boundingBox: DOMRectReadOnly,
-    cornerPoints: any,
+    cornerPoints: CornerPoint[],
     format: string,
     rawValue: string
+  }
+
+  interface CornerPoint {
+    x: number,
+    y: number
   }
 }

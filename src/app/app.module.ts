@@ -18,7 +18,7 @@ import { ScannerComponent } from './scanner/scanner.component';
     BrowserModule,
     AppRoutingModule,
     ZXingScannerModule,
-    FormsModule
+    FormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

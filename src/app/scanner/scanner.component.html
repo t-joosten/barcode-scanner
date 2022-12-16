@@ -1,6 +1,5 @@
 <div>
-  <button (click)="grabFrame()">Grab Frame</button>
-  <button (click)="takePhoto()">Take photo</button>
+  <button (click)="grabFrame()">Grab frame</button>
   <div class="select">
     <label for="videoSource">Video source: </label>
     <select id="videoSource" #cameras *ngIf="availableCameras" (change)="setCamera(cameras.value)">
@@ -12,6 +11,9 @@
 </div>
 
 <video id="scanner-video" autoplay playsinline></video>
-<img id="scanner-image">
 <canvas id="scanner-canvas" class="hidden"></canvas>
 <footer></footer>
+
+<p *ngFor="let scannedBarcode of scannedBarcodes">
+  {{ scannedBarcode }}
+</p>
