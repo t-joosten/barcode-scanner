@@ -1,8 +1,17 @@
-<button id="start" (click)="start()"  class="btn btn-lg btn-primary">Start capture</button>
-<button id="detect" (click)="detect()"  class="btn btn-lg btn-primary">Detect barcodes</button>
-<br>
-<table><tr>
-  <th> <video id="scanner-video" width="1920" height="1080" autoplay=true></video></th>
-  <th> <canvas id="canvas" height="1080"></canvas> </th>
-</tr></table>
+<div>
+  <button (click)="grabFrame()">Grab Frame</button>
+  <button (click)="takePhoto()">Take photo</button>
+  <div class="select">
+    <label for="videoSource">Video source: </label>
+    <select id="videoSource" #cameras *ngIf="availableCameras" (change)="setCamera(cameras.value)">
+      <option [value]="">No camera selected</option>
+      <option [value]="camera.deviceId" *ngFor="let camera of availableCameras" >{{ camera.label }}</option>
+    </select>
+  </div>
+<!--  <input #scannerZoomInput class="hidden" id="zoom" type="range" step="20">-->
+</div>
+
+<video id="scanner-video" autoplay playsinline></video>
+<img id="scanner-image">
+<canvas id="scanner-canvas" class="hidden"></canvas>
 <footer></footer>
