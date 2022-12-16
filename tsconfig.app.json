@@ -6,7 +6,8 @@
     "types": []
   },
   "files": [
-    "src/main.ts"
+    "src/main.ts",
+    "node_modules/@types/w3c-image-capture/index.d.ts"
   ],
   "include": [
     "src/**/*.d.ts"

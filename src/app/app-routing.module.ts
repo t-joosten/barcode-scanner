@@ -1,7 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { NgxScannerComponent } from "./ngx-scanner/ngx-scanner.component";
+import { ScannerComponent } from "./scanner/scanner.component";
 
-const routes: Routes = [];
+const routes: Routes = [
+  { path: '', component: NgxScannerComponent },
+  { path: 'scanner', component: ScannerComponent }
+];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

@@ -1,0 +1,43 @@
+<zxing-scanner
+  #scanner
+  [device]="deviceCurrent"
+  (camerasFound)="onCamerasFound($event)"
+  (scanSuccess)="onCodeResult($event)"
+  [formats]="possibleFormats"
+  [enable]="isScannerEnabled"
+  [tryHarder]="tryHarder"
+  (permissionResponse)="onHasPermission($event)"
+>
+</zxing-scanner>
+
+<h1>Select camera</h1>
+<select #devices *ngIf="availableDevices" [value]="deviceSelected" (change)="onDeviceSelectChange(devices.value)">
+  <option [value]="">No device selected</option>
+  <option [value]="device.deviceId" *ngFor="let device of availableDevices" >{{ device.label }}</option>
+</select>
+
+<p>v1</p>
+
+<p #input></p>
+
+<button (click)="isScannerEnabled = !isScannerEnabled">Enable/disable camera</button>
+
+<label for="toggle-try-harder">Try harder</label>
+<input type="checkbox" id="toggle-try-harder" (change)="toggleTryHarder()" />
+
+<label for="toggle-torch">Torch</label>
+<input type="checkbox" id="toggle-torch" (change)="toggleTorch()" />
+
+<ng-container *ngFor="let result of barcodeResults">
+  <p>{{ result }}</p>
+</ng-container>
+
+<p>{{ barcodeResults }}</p>
+
+<section class="results" *ngIf="qrResultString">
+  <div>
+    <small>Result</small>
+    <strong>{{ qrResultString }}</strong>
+  </div>
+  <button (click)="clearResult()">&times;</button>
+</section>
