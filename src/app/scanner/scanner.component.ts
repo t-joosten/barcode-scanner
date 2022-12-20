@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { from, map } from "rxjs";
+import { filter, from, map } from "rxjs";
 // @ts-ignore
 import * as bark from 'bark-js'
 
@@ -18,7 +18,8 @@ export class ScannerComponent implements OnInit {
     public currentCamera: MediaDeviceInfo;
     public scannedBarcodes: string[] = [];
 
-    private imageCapture: ImageCapture;
+    // @ts-ignore
+    private imageCapture: ImageCapture = null;
     private constraints: any;
 
   public ngOnInit(): void {
@@ -27,7 +28,9 @@ export class ScannerComponent implements OnInit {
 
   public getCameras(): void {
     from(navigator.mediaDevices.enumerateDevices())
-      .pipe(map(devices => devices.filter(device => device.kind === 'videoinput')))
+      .pipe(
+        map(devices => devices.filter(device => device.kind === 'videoinput')),
+        filter(devices => !!devices))
       .subscribe(devices => this.availableCameras = devices)
   }
 
@@ -51,8 +54,9 @@ export class ScannerComponent implements OnInit {
         const scannerVideo = document.getElementById('scanner-video') as HTMLVideoElement;
         scannerVideo.srcObject = mediaStream;
         this.mediaStream = mediaStream;
-        this.imageCapture = new ImageCapture(mediaStream.getVideoTracks()[0])
-        setInterval(() => this.grabFrame(), 100);
+        this.detectBarcodes();
+        // this.imageCapture = new (window as any).ImageCapture(mediaStream.getVideoTracks()[0])
+        // setInterval(() => this.grabFrame(), 100);
       })
       .catch(error => {
         console.log('getUserMedia error: ', error);
@@ -60,7 +64,7 @@ export class ScannerComponent implements OnInit {
   }
 
   public grabFrame(): void {
-    this.imageCapture.grabFrame().then(imageBitmap => {
+    this.imageCapture.grabFrame().then((imageBitmap: ImageBitmap) => {
       console.log('Grabbed frame:', imageBitmap);
       const scannerCanvas = document.getElementById('scanner-canvas') as HTMLCanvasElement;
       scannerCanvas.width = imageBitmap.width;
@@ -68,14 +72,50 @@ export class ScannerComponent implements OnInit {
       this.clearCanvas(scannerCanvas, imageBitmap.width, imageBitmap.height);
       // scannerCanvas.getContext('2d').drawImage(imageBitmap, 0, 0);
       // scannerCanvas.classList.remove('hidden');
-      this.detect(imageBitmap);
-    }).catch(function(error) {
+      // this.detect(imageBitmap);
+    }).catch((error: string) => {
       console.log('grabFrame() error: ', error);
     });
   }
 
+  public parseBarcode(barcode: DetectedBarcode): any {
+    const parsedBarcode = {};
+    let barcodeRemaining = barcode.rawValue;
 
-  private detect(image: ImageBitmap | Blob): void {
+    if(barcode.format === 'code_128')
+    {
+      // Removes ]C1
+      barcodeRemaining = barcodeRemaining.substring(3, barcodeRemaining.length)
+      console.log('barcode: ', barcodeRemaining);
+      // @ts-ignore
+      parsedBarcode['barcode'] = barcodeRemaining;
+      console.log(barcodeRemaining[0]+barcodeRemaining[1]);
+    }
+    if (barcodeRemaining[0]+barcodeRemaining[1] === '01') {
+      const gtin = barcodeRemaining.substring(2, 16);
+
+      console.log('gtin: ', gtin);
+      // @ts-ignore
+      parsedBarcode['01'] = gtin;
+      barcodeRemaining = barcodeRemaining.substring(16, barcodeRemaining.length);
+      console.log('barcode: ', barcodeRemaining);
+    }
+    if (barcodeRemaining[0]+barcodeRemaining[1] === '17') {
+      const date = barcodeRemaining.substring(2, 6);
+
+      console.log('date: ', date);
+      // @ts-ignore
+      parsedBarcode['17'] = date;
+      barcodeRemaining = barcodeRemaining.substring(6, barcodeRemaining.length);
+      console.log('barcode: ', barcodeRemaining);
+    }
+    console.log(parsedBarcode);
+
+    return parsedBarcode;
+  }
+
+
+  private detectBarcodes(): void {
       if (!('BarcodeDetector' in window)) {
         const footer = document.getElementsByTagName('footer')[0];
         footer.innerHTML = "Barcode Detection not supported";
@@ -87,8 +127,10 @@ export class ScannerComponent implements OnInit {
     const barcodeDetector = new BarcodeDetector();
     console.log('decoding');
 
+    const video = document.getElementById('scanner-video') as HTMLVideoElement;
+
     barcodeDetector
-      .detect(image)
+      .detect(video)
       .then((barcodes: DetectedBarcode[]) => {
         const scannerCanvas = document.getElementById('scanner-canvas') as HTMLCanvasElement;
         if (barcodes) {
