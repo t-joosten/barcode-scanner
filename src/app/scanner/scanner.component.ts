@@ -16,11 +16,12 @@ export class ScannerComponent implements OnInit {
     public mediaStream: MediaStream;
     public availableCameras: MediaDeviceInfo[];
     public currentCamera: MediaDeviceInfo;
-    public scannedBarcodes: string[] = [];
+    public scannedBarcodes: Map<string, number> = new Map<string, number>();
 
     // @ts-ignore
     private imageCapture: ImageCapture = null;
     private constraints: any;
+    private barcodeDetector: BarcodeDetector;
 
   public ngOnInit(): void {
     this.getCameras();
@@ -31,7 +32,10 @@ export class ScannerComponent implements OnInit {
       .pipe(
         map(devices => devices.filter(device => device.kind === 'videoinput')),
         filter(devices => !!devices))
-      .subscribe(devices => this.availableCameras = devices)
+      .subscribe(devices => {
+        console.log(devices);
+        this.availableCameras = devices
+      })
   }
 
   public setCamera(deviceId: string): void {
@@ -47,20 +51,23 @@ export class ScannerComponent implements OnInit {
       });
     }
 
-    this.constraints = { "video": { deviceId: {exact : this.currentCamera.deviceId } } };
+    if (this.currentCamera.deviceId) {
+      this.constraints = { "video": { deviceId: {exact : this.currentCamera.deviceId } } };
 
-    navigator.mediaDevices.getUserMedia(this.constraints)
-      .then(mediaStream => {
-        const scannerVideo = document.getElementById('scanner-video') as HTMLVideoElement;
-        scannerVideo.srcObject = mediaStream;
-        this.mediaStream = mediaStream;
-        this.detectBarcodes();
-        // this.imageCapture = new (window as any).ImageCapture(mediaStream.getVideoTracks()[0])
-        // setInterval(() => this.grabFrame(), 100);
-      })
-      .catch(error => {
-        console.log('getUserMedia error: ', error);
-      });
+      navigator.mediaDevices.getUserMedia(this.constraints)
+        .then(mediaStream => {
+          const scannerVideo = document.getElementById('scanner-video') as HTMLVideoElement;
+          scannerVideo.srcObject = mediaStream;
+          scannerVideo.autoplay = true;
+          this.mediaStream = mediaStream;
+          this.renderLoop();
+          // this.imageCapture = new (window as any).ImageCapture(mediaStream.getVideoTracks()[0])
+          // setInterval(() => this.grabFrame(), 100);
+        })
+        .catch(error => {
+          console.log('getUserMedia error: ', error);
+        });
+    }
   }
 
   public grabFrame(): void {
@@ -114,50 +121,59 @@ export class ScannerComponent implements OnInit {
     return parsedBarcode;
   }
 
-
-  private detectBarcodes(): void {
-      if (!('BarcodeDetector' in window)) {
-        const footer = document.getElementsByTagName('footer')[0];
-        footer.innerHTML = "Barcode Detection not supported";
-        console.error('Barcode Detection not supported');
-        return;
-      }
+  private initBarcodeDetector(): void {
+    if (!('BarcodeDetector' in window)) {
+      const footer = document.getElementsByTagName('footer')[0];
+      footer.innerHTML = "Barcode Detection not supported";
+      console.error('Barcode Detection not supported');
+      return;
+    }
 
     // @ts-ignore
-    const barcodeDetector = new BarcodeDetector();
-    console.log('decoding');
+    this.barcodeDetector = new BarcodeDetector();
+  }
 
-    const video = document.getElementById('scanner-video') as HTMLVideoElement;
+  private renderLoop(): void {
+    requestAnimationFrame(this.renderLoop);
+    this.detectBarcodes(this.scannerVideo);
+  }
 
-    barcodeDetector
-      .detect(video)
-      .then((barcodes: DetectedBarcode[]) => {
-        const scannerCanvas = document.getElementById('scanner-canvas') as HTMLCanvasElement;
-        if (barcodes) {
-          scannerCanvas.classList.remove('hidden');
-        }
-
-        barcodes.forEach(barcode => {
-          const lastCornerPoint = barcode.cornerPoints[barcode.cornerPoints.length - 1]
-          const ctx = scannerCanvas.getContext('2d');
-          ctx.moveTo(lastCornerPoint.x, lastCornerPoint.y)
-          barcode.cornerPoints.forEach(point => ctx.lineTo(point.x, point.y))
-
-          ctx.lineWidth = 3
-          ctx.strokeStyle = '#00e000ff'
-          ctx.stroke()
-        })
-
-        console.log(barcodes);
-
-        barcodes.forEach(barcode => {
-          if (this.scannedBarcodes.findIndex(scannedBarcode => scannedBarcode === barcode.rawValue) === -1) {
-            this.scannedBarcodes.push(barcode.rawValue);
+  private detectBarcodes(video: HTMLVideoElement): void {
+    if(!!this.barcodeDetector) {
+      console.log('decoding');
+      // @ts-ignore
+      this.barcodeDetector.detect(video)
+        .then((barcodes: DetectedBarcode[]) => {
+          const scannerCanvas = document.getElementById('scanner-canvas') as HTMLCanvasElement;
+          if (barcodes) {
+            scannerCanvas.classList.remove('hidden');
           }
-          console.log(bark( barcode.rawValue ));
-        });
-      })
-      .catch(console.error);
+
+          barcodes.forEach(barcode => {
+            const lastCornerPoint = barcode.cornerPoints[barcode.cornerPoints.length - 1]
+            const ctx = scannerCanvas.getContext('2d');
+            ctx.moveTo(lastCornerPoint.x, lastCornerPoint.y)
+            barcode.cornerPoints.forEach(point => ctx.lineTo(point.x, point.y))
+
+            ctx.lineWidth = 3
+            ctx.strokeStyle = '#00e000ff'
+            ctx.stroke()
+          })
+
+          console.log(barcodes);
+
+          barcodes.forEach(barcode => {
+            if (!this.scannedBarcodes.has(barcode.rawValue)) {
+              this.scannedBarcodes.set(barcode.rawValue, 1);
+            } else {
+              const count = this.scannedBarcodes.get(barcode.rawValue);
+              this.scannedBarcodes.set(barcode.rawValue, count+1);
+            }
+            console.log(bark(barcode.rawValue));
+          });
+        })
+        .catch(console.error);
+    }
   }
 
   private clearCanvas(canvas: HTMLCanvasElement, width: number, height: number) {

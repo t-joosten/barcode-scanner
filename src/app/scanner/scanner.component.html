@@ -11,12 +11,12 @@
 </div>
 
 <div class="container">
-  <video id="scanner-video" autoplay playsinline></video>
-  <canvas id="scanner-canvas" class="hidden"></canvas>
+  <video height="500" width="500" id="scanner-video" autoplay playsinline></video>
+  <canvas height="500" width="500" id="scanner-canvas" class="hidden"></canvas>
 </div>
 
 <footer></footer>
 
-<p *ngFor="let scannedBarcode of scannedBarcodes">
-  {{ scannedBarcode }}
+<p *ngFor="let scannedBarcode of scannedBarcodes | keyvalue">
+  {{ scannedBarcode.key }}: {{ scannedBarcode.value }}
 </p>
