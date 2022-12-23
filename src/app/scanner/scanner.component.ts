@@ -136,7 +136,7 @@ export class ScannerComponent implements OnInit {
   }
 
   private renderLoop(): void {
-    requestAnimationFrame(this.renderLoop);
+    requestAnimationFrame(() => this.renderLoop());
     this.detectBarcodes(this.scannerVideo);
   }
 
