@@ -41,7 +41,9 @@ export class ScannerComponent implements OnInit {
   public setCamera(deviceId: string): void {
     this.currentCamera = this.availableCameras.find(camera => camera.deviceId === deviceId);
 
-    this.getCameraStream();
+    if (this.currentCamera && this.currentCamera?.deviceId) {
+      this.getCameraStream();
+    }
   }
 
   public getCameraStream(): void {
